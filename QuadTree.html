@@ -1,9 +1,10 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html>
 <head>
     <title></title>
     <script src="pixi.js"></script>
     <script src="quadtree.js"></script>
+    <script src="spriteUtilities.js"></script>
     <meta charset="utf-8" />
 </head>
 <body>
@@ -17,7 +18,7 @@
         },1);
         document.body.appendChild(app.view);
         var Frstcontainer = new PIXI.Container();
-
+       // app.renderer
         Frstcontainer.width = app.view.width / 3;
         Frstcontainer.height = app.view.height / 2;
 
@@ -33,16 +34,27 @@
         Fifthcontainer.position.x = 40;
         Fifthcontainer.position.y = 400;
 
+        //Create the temperature bar
+        var tempBar = new PIXI.Container();
+        tempBar.position.set(26, 180)
+        Frstcontainer.addChild(tempBar); var bar, temp = 200;
+        var tempText
+
         app.stage.addChild(Frstcontainer);
         app.stage.addChild(Scndcontainer);
         app.stage.addChild(Thrdcontainer);
         app.stage.addChild(Frthcontainer);
         app.stage.addChild(Fifthcontainer);
+        let u = new SpriteUtilities(PIXI); // sprite utilities
 
         var circle = new PIXI.Graphics();
         circle.interactive = true;
-        var shapes = [];
-       shapes= atomPlacement(4, 6);
+        
+        var shapes = []; // to draw traingular grid atoms
+        var atomarray = [];  // to draw atom that are to be dragged
+        shapes = atomPlacement(4, 6);
+
+
         function atomPlacement(rownumber, columnnumber) {
             var shapes = [];
             var rown = rownumber;
@@ -134,6 +146,8 @@
             }
             return shapes;
         }
+
+
         draw1(shapes);
         //var circle = new PIXI.Graphics();
         //circle.interactive = true;
@@ -162,14 +176,7 @@
             //    myTree.insert(shapes1[i]);
                 circle2.beginFill(0xFFFF0B);
                 circle2.drawCircle(shapes1[i].x, shapes1[i].y, 10);
-                //circle.position.x = shapes1[i].x;
-                //circle.position.y = shapes1[i].y;
                 circle2.endFill();
-
-                // Frstcontainer.addChild(circle);
-                // Scndcontainer.addChild(circle);
-                // Thrdcontainer.addChild(circle);
-                //   Frthcontainer.addChild(circle);
 
             }
             Scndcontainer.addChild(circle2);
@@ -215,256 +222,6 @@
             .on('mousemove', onDragMove)
             .on('touchmove', onDragMove);
 
-            function onDragStart(event) {
-                // store a reference to the data
-                // the reason for this is because of multitouch
-                // we want to track the movement of this particular touch
-                this.data = event.data;
-                this.alpha = 0.5;
-                this.dragging = true;
-                this.sx = this.data.getLocalPosition(event.currentTarget).x;
-                this.sy = this.data.getLocalPosition(event.currentTarget).y;
-            }
-            var first, second, third;
-            function onDragStart2(event) {
-                // store a reference to the data
-                // the reason for this is because of multitouch
-                // we want to track the movement of this particular touch
-                this.data = event.data;
-                this.alpha = 0.5;
-                this.dragging = true;
-                this.sx = this.data.getLocalPosition(event.currentTarget).x;
-                this.sy = this.data.getLocalPosition(event.currentTarget).y;
-                for (var i = 0; i <atomarray.length; i++) {
-
-                //    var areaX = this.sx - atomarray[i].x;
-                    //  var areaY = this.sy - atomarray[i].y;
-                    var areaX = this.sx - event.currentTarget.children[i].x
-                    var areaY = this.sy - event.currentTarget.children[i].y;
-                    //return true if x^2 + y^2 <= radius squared. if the click is inside change color
-                    if (areaX * areaX + areaY * areaY <= 10 * 10)
-                    {
-                        if ( i==0) {
-                            first = true;
-                        }
-                        if( i==1)
-                        {
-                            second = true;
-                        }
-                        if (i==2) {
-                            third = true;
-
-                        }
-                        break;
-                    }
-                }
-            }
-
-
-            function onDragEnd(event) {
-               this.alpha = 1;
-                this.dragging = false;
-                // set the interaction data to null
-                this.data = event.data;
-                //this.data.Glo
-              //  var newPosition = this.data.getGlobalPosition();
-                var shapes1 = shapes;
-                var l = shapes1.length;
-                //  console.log(Frstcontain);
-                var container = true; // boolean variable to determine the container
-              //  var postion = app.renderer.plugins.interaction.mouse.target;
-                var postion = app.renderer.plugins.interaction.mouse.global;
-                var containername;
-                if (postion.x > 400 && postion.x < 800) { var newPosition = app.renderer.plugins.interaction.mouse.getLocalPosition(Scndcontainer);  container = false;}
-                if (postion.x > 0 && postion.x < 400) {
-                    var newPosition = app.renderer.plugins.interaction.mouse.getLocalPosition(Frstcontainer);
-                }
-
-                if (container) {
-                    containername=  Frstcontainer;
-                }
-                else {
-                    containername = Scndcontainer;
-                }
-                var myCursor = {
-                    x: newPosition.x,
-                    y: newPosition.y,
-                    radius: 10,
-                    fill: '#AAAAAA'
-                };
-                var position1 = {};
-                var candidates = [];
-                var candidates1 ;
-
-
-                        if (event.currentTarget.children.length > 1) {
-                         //   event.currentTarget.x = 26.66666668;
-                          //  event.currentTarget.y = 26.66666668;
-                            candidates = myTree.retrieve(myCursor);
-                          //  var x = event.currentTarget.toLocal(event.currentTarget.position, containername).x;
-                           // var y = event.currentTarget.toLocal(event.currentTarget.position, containername).y;
-                            //x = event.currentTarget.position.x - x;
-                            //y = y - event.currentTarget.position.y;
-                            //y = -y;
-                            for (var i = 0; i < candidates.length; i++) {
-                                var areaX = myCursor.x - candidates[i].x;
-                                var areaY = myCursor.y - candidates[i].y;
-                                //return true if x^2 + y^2 <= radius squared. if the click is inside change color
-                                if (areaX * areaX + areaY * areaY <= 20 * 20) {
-                                    candidates1 = candidates[i];
-                                }
-                            }
-
-
-
-
-                           if (first) {
-                               event.currentTarget.x = candidates1.x - 26.66666668;
-                               event.currentTarget.y = candidates1.y - 26.66666668;
-                          //      event.currentTarget.graphicsData[1].shape.x = shapes1[i].x + 26.66666668;
-                          //      event.currentTarget.graphicsData[1].shape.y = shapes1[i].y + 26.66666668
-                          //      event.currentTarget.graphicsData[2].shape.x = shapes1[i].x+26.66666668+26.666668;
-                          //      event.currentTarget.graphicsData[2].shape.y = shapes1[i].y;
-                          //      event.currentTarget.setParent(Frstcontainer);
-                                first = false;
-                           }
-                           if (second) {
-                               event.currentTarget.x = candidates1.x - 26.66666668 - 26.66666668;
-                               event.currentTarget.y = candidates1.y - 26.66666668 - 26.66666668;
-                          //      event.currentTarget.graphicsData[0].shape.x = shapes1[i-1].x;
-                          //      event.currentTarget.graphicsData[0].shape.y = shapes1[i-1].y;
-                          //      event.currentTarget.graphicsData[2].shape.x = shapes1[i].x + 26.66666668;
-                          //      event.currentTarget.graphicsData[2].shape.y =  shapes1[i-1].y;
-                          //      event.currentTarget.graphicsData[1].shape.x = shapes1[i].x;
-                          //      event.currentTarget.graphicsData[1].shape.y = shapes1[i].y;
-                          //      event.currentTarget.setParent(Frstcontainer);
-                                second = false;
-                            }
-                           if (third) {
-                               event.currentTarget.x = candidates1.x - 26.66666668 - 26.66666668 - 26.66666668;
-                               event.currentTarget.y = candidates1.y - 26.66666668;
-                          //      event.currentTarget.graphicsData[0].shape.x = shapes1[i].x - 26.66666668 - 26.666668;
-                          //      event.currentTarget.graphicsData[0].shape.y = shapes1[i].y;
-                          //      event.currentTarget.graphicsData[1].shape.x = shapes1[i].x - 26.66666668;
-                          //      event.currentTarget.graphicsData[1].shape.y = shapes1[i].y + 26.66666668;
-                          //      event.currentTarget.graphicsData[2].shape.x = shapes1[i].x;
-                          //      event.currentTarget.graphicsData[2].shape.y = shapes1[i].y;
-                          //      event.currentTarget.setParent(Frstcontainer);
-                                third = false;
-                            }
-                      
-                        }
-                        
-                        else {
-                           
-                            var x = event.currentTarget.toLocal(event.currentTarget.position, containername).x;
-                            var y = event.currentTarget.toLocal(event.currentTarget.position, containername).y;
-                            x = event.currentTarget.position.x-x;
-                            y = y - event.currentTarget.position.y;
-                            y = -y;
-
-                            var myCursor1 = {
-                                x: x,
-                                y: y,
-                                radius: 10,
-                                fill: '#AAAAAA'
-                            };
-                            candidates = myTree.retrieve(myCursor1);
-                            for (var i = 0; i < candidates.length; i++) {
-                                var areaX = x - candidates[i].x;
-                                var areaY = y - candidates[i].y;
-                                //return true if x^2 + y^2 <= radius squared. if the click is inside change color
-                                if (areaX * areaX + areaY * areaY <= 20 * 20) {
-                                    event.currentTarget.x = candidates[i].x;
-                                    event.currentTarget.y = candidates[i].y;}
-                            }
-                           // var x = this.x;
-                            //var y = this.y;
-                            //var position = event.data.global.getLocalPosition(Frstcontainer);
-                           // var point = new PIXI.Point;
-                            //point.x = shapes[1].x;
-                            //point.y = shapes[1].y;
-                            //var transform = atom.localTransform.applyInverse(Frstcontainer);
-                           // var transform = atom.localTransform.apply(point);
-                          //  var position = this.event.data.getLocalPosition(atom).x;
-                            
-                           // this.x = position.x;this.y =position.y
-                          //  var position1 = this.data.getLocalPosition(event.currentTarget.graphicsData[0].shape).y;
-                        }
-                        event.currentTarget.setParent(containername);
-
-                        // if (color == 3355443) {
-
-                       //  }
-                       //  else {
-                         //    if (container) {
-                           //      atom2.setParent(Frstcontainer);
-                            // }
-                             //else {
-                              //   atom2.setParent(Scndcontainer);
-                             //}
-                       //}
-                          // atom.setParent(Frstcontainer);
-                            // atom.y = shapes1[i].y
-                           // atom.graphicsData[0].shape.x = shapes1[i].x;
-                            //atom.graphicsData[0].shape.y = shapes1[i].y;
-                      //  }
-                        //else {
-                            //circle2.beginFill("" + a + "x" + b);
-                          ////  circle2.beginFill(color);
-                            //circle.beginFill(
-                            ////circle2.drawCircle(shapes1[i].x, shapes[i].y, 10);
-                            ////circle2.endFill();
-                         //   circle2.graphicsData[i].destroy();
-                        ////}
-                        //if (event.target.graphicsData[0].shape.y == 70) {
-                        //    atom2.clear();
-                        //}
-                        //else {
-                        //    atom.clear();
-                        //}
-
-                    }
-
-                
-             //   if (!collisiondetected)
-               // {
-               //     event.target.x = event.currentTarget.graphicsData[0].x;
-               //     event.target.y = event.currentTarget.graphicsData[0].y;
-               // }
-                //if (!colorChanged) {
-                //    if (event.target.graphicsData[0].shape.y == 70) {
-                //        atom2.destroy();
-                //    }
-                //    else {
-                //        atom.clear();
-                //    }
-                //}
-                //stage.addChild(circle);
-                //renderer.render(stage);
-                //if (container) {
-                //    Frstcontainer.addChild(circle);
-                //}
-                //else {
-                //    Scndcontainer.addChild(circle2)
-                //}
-
-
-            
-            function onDragMove() {
-                if (this.dragging) {
-                  var newPosition = this.data.getLocalPosition(this.parent);
-                    //   var newPosition = app.renderer.plugins.interaction.mouse.getLocalPosition(this.parent);
-                    // var newPosition=app.renderer.plugins.interaction.mouse.getLocalPosition(Frthcontainer);
-                   // var newPosition = this.data.global;
-                    this.x = newPosition.x -this.sx;
-                    this.y = newPosition.y - this.sy;
-
-
-               }
-            }
-
-
                 atom2 = new PIXI.Graphics();
                 atom2.interactive = true;
                 atom2.beginFill(0x990000);
@@ -472,7 +229,7 @@
                 atom2.position.x = 20;
                 atom2.position.y = 70;
                 atom2.endFill();
-            //  atom.buttonMode = true;
+          
             // this button mode will mean the hand cursor appears when you roll over the bunny with your mouse
                 atom2.buttonMode = true;
 
@@ -498,11 +255,11 @@
                 atom4 = new PIXI.Graphics();
                 atom5 = new PIXI.Graphics();
                 //atom3.interactive = true;
-                var atomarray = [];
+              //  var atomarray = [];
                 atomarray = atomPlacement(2, 2)
 
                 //for (var i = 0; i < atomarray.length; i++) {
-
+            
                     atom3.beginFill(0x990000);
                     atom3.drawCircle(0, 0, 10);
                     atom3.position.x = atomarray[0].x;
@@ -534,10 +291,231 @@
                // events for drag move
                .on('mousemove', onDragMove)
 
+
+            //Create the black background rectangle
+            var innerBar = new PIXI.Graphics();
+            innerBar.lineStyle(2, 0xffd900, 1);
+            innerBar.beginFill(0x000000,0.25);
+            innerBar.drawRoundedRect(10, 0, 220, 40,15);
+            innerBar.endFill();
+            
+            tempBar.addChild(innerBar);
+            //Create the front red rectangle
+            //var outerBar = new PIXI.Graphics();
+            //outerBar.beginFill(0xFF3300);
+            //outerBar.drawRect(0, 0, 128, 8);
+            //outerBar.endFill();
+            //tempBar.addChild(outerBar);
+            //tempBar.outer = outerBar;
+
+            bar =  new PIXI.Sprite.fromImage('img/healthBar.png');
+            tempBar.addChild(bar);
+            bar.position.x = 20;
+            bar.position.y = 10;
+            bar.width = 200;
+            bar.height = 20;
+            //bar.anchor.x = 0.5
+           bar.scale.x = 0.5;
+           bar.scale.y = 0.5;
+            //  tempBar.mask = innerBar;
+            tempText = new PIXI.Text('T: '+ temp+'F', {
+               fontWeight: 'bold', fontSize: 20, fontFamily: 'Arial', fill: '0xffd900', dropShadow: true
+           , dropShadowColor: '#000000', dropShadowBlur: 4, dropShadowAnlge: Math.PI / 6, dropShadowDistance: 6
+           });
+           tempText.x = innerBar.width / 2-40;
+           tempText.y = innerBar.height + 2;
+           tempBar.addChild(tempText);
+            //bar.sc
+      //      bar.rotation=
+
+
         }
+
+        function onDragStart(event) {
+            // store a reference to the data
+            // the reason for this is because of multitouch
+            // we want to track the movement of this particular touch
+            this.data = event.data;
+            this.alpha = 0.5;
+            this.dragging = true;
+            this.sx = this.data.getLocalPosition(event.currentTarget).x;
+            this.sy = this.data.getLocalPosition(event.currentTarget).y;
+        }
+        var first, second, third;
+        function onDragStart2(event) {
+            // store a reference to the data
+            // the reason for this is because of multitouch
+            // we want to track the movement of this particular touch
+            this.data = event.data;
+            this.alpha = 0.5;
+            this.dragging = true;
+            this.sx = this.data.getLocalPosition(event.currentTarget).x;
+            this.sy = this.data.getLocalPosition(event.currentTarget).y;
+            for (var i = 0; i < atomarray.length; i++) {
+
+                //    var areaX = this.sx - atomarray[i].x;
+                //  var areaY = this.sy - atomarray[i].y;
+                var areaX = this.sx - event.currentTarget.children[i].x
+                var areaY = this.sy - event.currentTarget.children[i].y;
+                //return true if x^2 + y^2 <= radius squared. if the click is inside change color
+                if (areaX * areaX + areaY * areaY <= 10 * 10) {
+                    if (i == 0) {
+                        first = true;
+                    }
+                    if (i == 1) {
+                        second = true;
+                    }
+                    if (i == 2) {
+                        third = true;
+
+                    }
+                    break;
+                }
+            }
+        }
+
+
+        function onDragEnd(event) {
+            this.alpha = 1;
+            this.dragging = false;
+            // set the interaction data to null
+            this.data = event.data;
+            var shapes1 = shapes;
+            var l = shapes1.length;
+            var container = true; // boolean variable to determine the container
+
+            var postion = app.renderer.plugins.interaction.mouse.global;
+            var containername;
+            if (postion.x > 400 && postion.x < 800) { var newPosition = app.renderer.plugins.interaction.mouse.getLocalPosition(Scndcontainer); container = false; }
+            if (postion.x > 0 && postion.x < 400) {
+                var newPosition = app.renderer.plugins.interaction.mouse.getLocalPosition(Frstcontainer);
+            }
+
+            if (container) {
+                containername = Frstcontainer;
+            }
+            else {
+                containername = Scndcontainer;
+            }
+            var myCursor = {
+                x: newPosition.x,
+                y: newPosition.y,
+                radius: 10,
+                fill: '#AAAAAA'
+            };
+            var position1 = {};
+            var candidates = [];
+            var candidates1;
+
+            // for multiple atom drag and placement
+            if (event.currentTarget.children.length > 1) {
+                candidates = myTree.retrieve(myCursor);
+                for (var i = 0; i < candidates.length; i++) {
+                    var areaX = myCursor.x - candidates[i].x;
+                    var areaY = myCursor.y - candidates[i].y;
+                    //return true if x^2 + y^2 <= radius squared. if the click is inside change color
+                    if (areaX * areaX + areaY * areaY <= 20 * 20) {
+                        candidates1 = candidates[i];
+                    }
+                }
+
+
+
+
+                if (first) {
+                    event.currentTarget.x = candidates1.x - 26.66666668;
+                    event.currentTarget.y = candidates1.y - 26.66666668;
+
+                    first = false;
+                }
+                if (second) {
+                    event.currentTarget.x = candidates1.x - 26.66666668 - 26.66666668;
+                    event.currentTarget.y = candidates1.y - 26.66666668 - 26.66666668;
+
+                    second = false;
+                }
+                if (third) {
+                    event.currentTarget.x = candidates1.x - 26.66666668 - 26.66666668 - 26.66666668;
+                    event.currentTarget.y = candidates1.y - 26.66666668;
+                    third = false;
+                }
+
+            }
+
+                // for single atom drag
+            else {
+
+                var x = event.currentTarget.toLocal(event.currentTarget.position, containername).x;
+                var y = event.currentTarget.toLocal(event.currentTarget.position, containername).y;
+                x = event.currentTarget.position.x - x;
+                y = y - event.currentTarget.position.y;
+                y = -y;
+
+                var myCursor1 = {
+                    x: x,
+                    y: y,
+                    radius: 10,
+                    fill: '#AAAAAA'
+                };
+                candidates = myTree.retrieve(myCursor1);
+                for (var i = 0; i < candidates.length; i++) {
+                    var areaX = x - candidates[i].x;
+                    var areaY = y - candidates[i].y;
+                    //return true if x^2 + y^2 <= radius squared. if the click is inside change color
+                    if (areaX * areaX + areaY * areaY <= 20 * 20) {
+                        event.currentTarget.x = candidates[i].x;
+                        event.currentTarget.y = candidates[i].y;
+                    }
+                }
+
+            }
+        //    tempBar.outer.width -= 1;
+            //  this.life = 100;
+            if (temp>0) {
+                temp = temp - 20;
+                bar.width = temp;
+changetemp=temp;
+jitter +=0.001 ;
+                tempText.text = 'T: ' + temp + 'F';
+            }
+           
+            event.currentTarget.setParent(containername);
+
+        }
+
+        function onDragMove() {
+            if (this.dragging) {
+                var newPosition = this.data.getLocalPosition(this.parent);
+                //   var newPosition = app.renderer.plugins.interaction.mouse.getLocalPosition(this.parent);
+                // var newPosition=app.renderer.plugins.interaction.mouse.getLocalPosition(Frthcontainer);
+                // var newPosition = this.data.global;
+                this.x = newPosition.x - this.sx;
+                this.y = newPosition.y - this.sy;
+
+
+            }
+        }
+        gameLoop();
+      var jitter =0.001;
+     
+        function gameLoop() {
+            requestAnimationFrame(gameLoop);
+
+            if (temp<200) {
+              
+          u.shake(circle, jitter, true);  
+            }
+            //Update the SpriteUtilities library each frame
+            
+            app.renderer.render(app.stage);
+            u.update();
+        }
+
+        
        //  M W F     4 pm
         // T THR     11.30 am
 
     </script>
 </body>
 </html>
+
