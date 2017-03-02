@@ -4,7 +4,8 @@
     <title></title>
     <script src="pixi.js"></script>
     <script src="quadtree.js"></script>
-    <script src="spriteUtilities.js"></script>
+    <!--<script src="spriteUtilities.js"></script>-->
+   
     <meta charset="utf-8" />
 </head>
 <body>
@@ -22,7 +23,12 @@
         Frstcontainer.width = app.view.width / 3;
         Frstcontainer.height = app.view.height / 2;
 
+       
+
+
         var Scndcontainer = new PIXI.Container();
+        Scndcontainer.width = app.view.width / 3;
+        Scndcontainer.height = app.view.height / 2;
         var Thrdcontainer = new PIXI.Container();
         var Frthcontainer = new PIXI.Container();
         var Fifthcontainer = new PIXI.Container();
@@ -36,23 +42,30 @@
 
         //Create the temperature bar
         var tempBar = new PIXI.Container();
-        tempBar.position.set(26, 180)
-        Frstcontainer.addChild(tempBar); var bar, temp = 200;
-        var tempText
+        tempBar.position.set(26, 150)// work on this later
+        
+        Frstcontainer.addChild(tempBar); var bar, ebar, energy = 0; temp = 0;
+        var tempText, atom;
+        var knob;
 
         app.stage.addChild(Frstcontainer);
         app.stage.addChild(Scndcontainer);
         app.stage.addChild(Thrdcontainer);
         app.stage.addChild(Frthcontainer);
         app.stage.addChild(Fifthcontainer);
-        let u = new SpriteUtilities(PIXI); // sprite utilities
+
+        //let u = new SpriteUtilities(PIXI); // sprite utilities
 
         var circle = new PIXI.Graphics();
         circle.interactive = true;
-        
+        circle.anchor = 0.5;
+
+        var circle2 = new PIXI.Graphics();
+        circle2.interactive = true;
+        circle2.anchor = 0.5;
         var shapes = []; // to draw traingular grid atoms
         var atomarray = [];  // to draw atom that are to be dragged
-        shapes = atomPlacement(4, 6);
+        shapes = atomPlacement(4, 4);
 
 
         function atomPlacement(rownumber, columnnumber) {
@@ -82,10 +95,10 @@
                     /*      point(i*cellW, j*cellH);
                      point(i*cellW - cellW/2, j*cellH - cellH/2); */
                     // vertex(i * cellW, j * cellH);
-                    if (i < col) {               // add one  cordinate less to bottom line
+                 //   if (i < col) {               // add one  cordinate less to bottom line
                         var xcor = i * cellW; // bottom one one
                         var ycor = j * cellH;
-                    }
+                   // } // commented on 1 March 2017 for allowing 4*4 Grid
 
 
 
@@ -104,7 +117,8 @@
                                 fill: '#AAAAAA' // color
                                 // Add element.
                             });
-                            if (i < col) { // added so that bottom row will have one less than top
+                            //  commented on 1 March 2017 for allowing 4*4 Grid
+                          //  if (i < col) { // added so that bottom row will have one less than top
                                 shapes.push({
 
                                     x: xcor,
@@ -113,7 +127,7 @@
                                     fill: '#AAAAAA'
                                     // Add element.
                                 });
-                            }
+                           // }
                         }
                         //even no of row
                     }
@@ -169,8 +183,9 @@
              //   Frthcontainer.addChild(circle);
             }
             Frstcontainer.addChild(circle);
-            var circle2 = new PIXI.Graphics();
-            circle2.interactive = true;
+         //   var circle2 = new PIXI.Graphics();
+         //   circle2.interactive = true;
+         //   circle2.anchor = 0.5;
             for (var i = 0; i < l; i++) {
 
             //    myTree.insert(shapes1[i]);
@@ -292,51 +307,149 @@
                .on('mousemove', onDragMove)
 
 
-            //Create the black background rectangle
-            var innerBar = new PIXI.Graphics();
-            innerBar.lineStyle(2, 0xffd900, 1);
-            innerBar.beginFill(0x000000,0.25);
-            innerBar.drawRoundedRect(10, 0, 220, 40,15);
-            innerBar.endFill();
+            //Create the black background rectangle for temperature
+            var outerBar = new PIXI.Graphics();
+            outerBar.lineStyle(2, 0xffd900, 1);
+            outerBar.beginFill(0x000000,0.25);
+            outerBar.drawRoundedRect(10, 0, 40, 220,15);
+            outerBar.endFill();
             
-            tempBar.addChild(innerBar);
-            //Create the front red rectangle
-            //var outerBar = new PIXI.Graphics();
-            //outerBar.beginFill(0xFF3300);
-            //outerBar.drawRect(0, 0, 128, 8);
-            //outerBar.endFill();
-            //tempBar.addChild(outerBar);
-            //tempBar.outer = outerBar;
+            tempBar.addChild(outerBar);
 
-            bar =  new PIXI.Sprite.fromImage('img/healthBar.png');
+            //text for temperature
+            tempText = new PIXI.Text('T: ' + temp + 'F', {
+                fontWeight: 'bold', fontSize: 20, fontFamily: 'Arial', fill: '0xffd900', dropShadow: true
+         , dropShadowColor: '#000000', dropShadowBlur: 4, dropShadowAnlge: Math.PI / 6, dropShadowDistance: 6
+            });
+            tempText.x = outerBar.width / 2 - 20; // to set in center of vertical temperature bar
+            tempText.y = outerBar.height + 2;
+            tempBar.addChild(tempText);
+
+            // bar for temperature
+            bar = new PIXI.Sprite.fromImage('img/healthBar.png');
             tempBar.addChild(bar);
-            bar.position.x = 20;
-            bar.position.y = 10;
-            bar.width = 200;
-            bar.height = 20;
+            bar.position.x = 18;
+            bar.position.y = 200;
+            // bar.width = 20;
+            //   bar.height = temp;
+            bar.scale.x = 0.78;
+            bar.scale.y = 0;
+           // bar.interactive = true;
+
+            knob = new PIXI.Sprite.fromImage('img/knob.png');
+            // var that = this;
+            tempBar.addChild(knob);
+            knob.interactive = true;
+            knob.buttonMode = true;
+            knob.anchor.x = 0.5;
+            knob.anchor.y = 0.5;
+            knob.position.x = bar.position.x + 40
+            knob.position.y = bar.position.y; //= 200; keep same as maximum temperature
+            knob.width = knob.height = 5 * 2;
+            knob
+              // events for drag start
+              .on('mousedown', onKDragStart)
+              .on('mouseup', onKDragEnd)
+              .on('mouseupoutside', onKDragEnd)
+              // events for drag move
+              .on('mousemove', onKDragMove)
+
+            // end of temperature
+
+            //Create the black background rectangle for energy
+            var outerEBar = new PIXI.Graphics();
+            outerEBar.lineStyle(2, 0xffd900, 1);
+            outerEBar.beginFill(0x000000, 0.25);
+            outerEBar.drawRoundedRect(100, 0, 40, 220, 15);//x,y,w,h,r
+            outerEBar.endFill();
+
+            tempBar.addChild(outerEBar);
+
+            //text for temperature
+            energyText = new PIXI.Text('E: ' + 0+ 'J', {
+                fontWeight: 'bold', fontSize: 20, fontFamily: 'Arial', fill: '0xffd900', dropShadow: true
+         , dropShadowColor: '#000000', dropShadowBlur: 4, dropShadowAnlge: Math.PI / 6, dropShadowDistance: 6
+            });
+            energyText.x = 100; // to set in center of vertical temperature bar
+            energyText.y = outerEBar.height + 2;
+            tempBar.addChild(energyText);
+
+            
+
+            // bar for temperature
+            ebar = new PIXI.Sprite.fromImage('img/healthBar.png');
+           
+            ebar.position.x = 108;
+            ebar.position.y = 200;
+            // bar.width = 20;
+            //   bar.height = temp;
+            ebar.scale.x = 0.78;
+            ebar.scale.y = 0;
+            tempBar.addChild(ebar);
+             
             //bar.anchor.x = 0.5
-           bar.scale.x = 0.5;
-           bar.scale.y = 0.5;
+           //bar.scale.x = 0.5;
+           //bar.scale.y = 0.5;
             //  tempBar.mask = innerBar;
-            tempText = new PIXI.Text('T: '+ temp+'F', {
-               fontWeight: 'bold', fontSize: 20, fontFamily: 'Arial', fill: '0xffd900', dropShadow: true
-           , dropShadowColor: '#000000', dropShadowBlur: 4, dropShadowAnlge: Math.PI / 6, dropShadowDistance: 6
-           });
-           tempText.x = innerBar.width / 2-40;
-           tempText.y = innerBar.height + 2;
-           tempBar.addChild(tempText);
+          
             //bar.sc
       //      bar.rotation=
+       // var bar1 =  new PIXI.Sprite.fromImage('img/thermometer-template.png');
+         //   tempBar.addChild(bar1);
+          //  bar1.position.x = 50;
+           // bar1.position.y = 50;
+           // bar1.width = 200;
+           // bar1.height = 300;
 
 
         }
+        // knob temperature drag start and end
+        function onKDragStart(event) {
+            this.data1 = event.data;
+            // this.alpha = 0.5;
+            this.dragging = true;
+            this.sx1 = this.data1.getLocalPosition(event.currentTarget).x;
+            this.sy1 = this.data1.getLocalPosition(event.currentTarget).y;
+        }
 
+        // set the events for when the mouse is released or a touch is released
+        function onKDragEnd(event) {
+            this.alpha = 1
+            this.dragging = false;
+            this.data = null;
+        }
+
+        // set the callbacks for when the mouse or a touch moves
+        function onKDragMove(event) {
+            if (this.dragging) {
+                var newPosition1 = this.data1.getLocalPosition(this.parent);
+                //   var newPosition = app.renderer.plugins.interaction.mouse.getLocalPosition(this.parent);
+                // var newPosition=app.renderer.plugins.interaction.mouse.getLocalPosition(Frthcontainer);
+                // var newPosition = this.data.global;
+                //   console.log(this.parent);
+                //  this.x = newPosition1.x - this.sx1;
+                if (temp>=0  && temp<200) {
+                    this.y = newPosition1.y - this.sy1;
+                    temp = +((200 - this.y).toFixed(2)); //max temp
+                    // if (temp<0) {
+                    bar.scale.y = +((-temp / 200 * 0.92).toFixed(2));
+                    tempText.text = 'T: ' + temp + 'F';
+                    // }
+                }
+              
+               
+             //   console.log(this.y);
+
+            }   
+        }
+        // knob temperature drag end not sure how to move forward with this I think this is incorrect
+       // }
         function onDragStart(event) {
             // store a reference to the data
             // the reason for this is because of multitouch
             // we want to track the movement of this particular touch
             this.data = event.data;
-            this.alpha = 0.5;
+           // this.alpha = 0.5;
             this.dragging = true;
             this.sx = this.data.getLocalPosition(event.currentTarget).x;
             this.sy = this.data.getLocalPosition(event.currentTarget).y;
@@ -376,7 +489,7 @@
 
 
         function onDragEnd(event) {
-            this.alpha = 1;
+           // this.alpha = 1;
             this.dragging = false;
             // set the interaction data to null
             this.data = event.data;
@@ -386,6 +499,7 @@
 
             var postion = app.renderer.plugins.interaction.mouse.global;
             var containername;
+            
             if (postion.x > 400 && postion.x < 800) { var newPosition = app.renderer.plugins.interaction.mouse.getLocalPosition(Scndcontainer); container = false; }
             if (postion.x > 0 && postion.x < 400) {
                 var newPosition = app.renderer.plugins.interaction.mouse.getLocalPosition(Frstcontainer);
@@ -393,9 +507,11 @@
 
             if (container) {
                 containername = Frstcontainer;
+              //  event.currentTarget.setParent(containername);
             }
             else {
                 containername = Scndcontainer;
+                //event.currentTarget.setParent(containername);
             }
             var myCursor = {
                 x: newPosition.x,
@@ -465,21 +581,33 @@
                     if (areaX * areaX + areaY * areaY <= 20 * 20) {
                         event.currentTarget.x = candidates[i].x;
                         event.currentTarget.y = candidates[i].y;
+                        event.currentTarget.setParent(containername);
                     }
+                    
                 }
 
             }
+
+
+
         //    tempBar.outer.width -= 1;
             //  this.life = 100;
-            if (temp>0) {
-                temp = temp - 20;
-                bar.width = temp;
-changetemp=temp;
-jitter +=0.001 ;
+        if (temp<200) {
+                temp = temp + 10;
+                bar.scale.y = +((-temp / 200 * 0.92).toFixed(2)); // keep it rounded to 2 digits
+                knob.y = knob.y-10;
+               //changetemp=temp; //not used anywhere
+               //jitter +=0.001 ; // not used anywhere
                 tempText.text = 'T: ' + temp + 'F';
-            }
-           
-            event.currentTarget.setParent(containername);
+        }
+            // energy bar increases from 0 to 200 maximum
+        if (energy < 200) {
+            energy = energy + 10;
+            ebar.scale.y = +((-temp / 200 * 0.92).toFixed(2)); // keep it rounded to 2 digits
+          
+            energyText.text = 'E: ' + energy + 'J';
+        }
+            
 
         }
 
@@ -489,10 +617,11 @@ jitter +=0.001 ;
                 //   var newPosition = app.renderer.plugins.interaction.mouse.getLocalPosition(this.parent);
                 // var newPosition=app.renderer.plugins.interaction.mouse.getLocalPosition(Frthcontainer);
                 // var newPosition = this.data.global;
+             //   console.log(this.parent);
                 this.x = newPosition.x - this.sx;
                 this.y = newPosition.y - this.sy;
-
-
+                console.log(this.x);
+                
             }
         }
         gameLoop();
@@ -503,12 +632,13 @@ jitter +=0.001 ;
 
             if (temp<200) {
               
-          u.shake(circle, jitter, true);  
+       //   u.shake(atom, 0.1, true);
+       //  circle.rotation =10  
             }
             //Update the SpriteUtilities library each frame
             
             app.renderer.render(app.stage);
-            u.update();
+         //    u.update();
         }
 
         
@@ -518,4 +648,3 @@ jitter +=0.001 ;
     </script>
 </body>
 </html>
-
