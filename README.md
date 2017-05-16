@@ -5,3 +5,4 @@
  Temperature bar implmented in PIXI.js.
  Energy increases after collision detection.
  
+Working - Drag the black or red color circle to yellow circle and as soon as collsion is detected the black and yellow circle will take the position of yellow circle.
